@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import os 
+import os
 # requests allows you to send requests, without the need for manual labor
 # https://2.python-requests.org/en/master/
 import requests
@@ -44,18 +44,25 @@ for month, label in months.items():
     doc = BeautifulSoup(response.text, 'html.parser')
     # find tag a <inside> tag p <inside> tag li
     content = doc.select(".listagem-noticias li p a")
-    if not content: continue
+    if not content:
+        continue
 
     # get documents date
     documents = [c.get_text() for c in content]
     # get documents link
     urls = [c['href'] for c in content]
 
-    # create path if it doesnt exist 
+    # create path if it doesnt exist
     os.makedirs('documents/{}/'.format(label), exist_ok=True)
 
     for doc, url in zip(documents, urls):
         pdf = requests.get(url)
-        # replace space by _ and / by _
-        file_name = ' - {}'.format(doc.lower().replace(' ', '_').replace('/', '_'))
-        open('documents/{}/{}.pdf'.format(label, file_name), 'wb').write(pdf.content) 
+        # replace space by _, / by _ and - by _
+        file_name = '{}'.format(
+            doc.lstrip()
+            .lower()
+            .replace(' ', '_')
+            .replace('/', '_')
+            .replace('-', '_'))
+        open('documents/{}/{}.pdf'.format(label,
+                                          file_name), 'wb').write(pdf.content)
