@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 months = {
     '01': 'Janeiro',
     '02': 'Fevereiro',
-    '03': 'Março',
+    '03': 'Marco',
     '04': 'Abril',
     '05': 'Maio',
     '06': 'Junho',
@@ -53,7 +53,7 @@ for month, label in months.items():
     urls = [c['href'] for c in content]
 
     # create path if it doesnt exist
-    os.makedirs('documents/{}/'.format(label), exist_ok=True)
+    os.makedirs('documents/{}/'.format(label))
 
     for doc, url in zip(documents, urls):
         pdf = requests.get(url)
