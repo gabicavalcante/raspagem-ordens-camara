@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 # requests allows you to send requests, without the need for manual labor
 # https://2.python-requests.org/en/master/
@@ -53,14 +54,16 @@ for month, label in months.items():
     urls = [c['href'] for c in content]
 
     # create path if it doesnt exist
-    os.makedirs('documents/{}/'.format(label))
+    path = 'documents/{}/'.format(label)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     for doc, url in zip(documents, urls):
         pdf = requests.get(url)
-        # replace space by _, / by _ and - by _
         file_name = '{}'.format(
-            doc.lstrip()
-            .lower()
+            doc
+            .lstrip() # remove initial space
+            .lower() # convert to lowcase
             .replace(' ', '_')
             .replace('/', '_')
             .replace('-', '_'))
