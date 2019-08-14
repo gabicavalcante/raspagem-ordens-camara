@@ -53,20 +53,22 @@ def find_projeto_de_lei(keywords):
     flag_assunto = False
     flag_movimento = True
 
-    pauta = {'tipo': '', 'n': '', 'responsavel': ''}
+    pauta = {'tipo': '', 'n': '', 'responsavel': '',
+             'movimento': '', 'assunto': ''}
     list_pautas = []
     for keyword in keywords:
-        #print(flag_titulo, flag_responsavel, flag_assunto, flag_movimento)
         if keyword == 'ASSUNTO' and flag_titulo and not flag_movimento:
             pauta['tipo'] = pauta['tipo'].rstrip().replace(' .', '')
             responsavel = re.sub(
                 r'VER[.a]*[.ª]*[ .]* ', '',
-                pauta['responsavel'].rstrip()).replace(' .', '') 
+                pauta['responsavel'].rstrip()).replace(' .', '')
             pauta['partido'] = responsavel.rsplit(' ', 1)[1]
             pauta['responsavel'] = responsavel.rsplit(' ', 1)[0]
-            
+
             list_pautas.append(pauta)
-            pauta = {'tipo': '', 'n': '', 'responsavel': ''}
+
+            pauta = {'tipo': '', 'n': '', 'responsavel': '',
+                     'movimento': '', 'assunto': ''}
 
             flag_titulo = False
             flag_assunto = True
@@ -85,8 +87,11 @@ def find_projeto_de_lei(keywords):
                 # quuando a string 'projeto' se repete em motivmento e titulo
                 continue
 
-        if (flag_assunto or flag_movimento):
-            continue
+        if (flag_assunto and not flag_titulo):
+            pauta['assunto'] += keyword + ' '
+
+        if (flag_movimento and not flag_assunto):
+            pauta['movimento'] += keyword + ' '
 
         if flag_titulo and re.search(r'\d/20\d\d', keyword):
             pauta['n'] = keyword
