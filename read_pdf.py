@@ -59,8 +59,12 @@ def find_projeto_de_lei(keywords):
         #print(flag_titulo, flag_responsavel, flag_assunto, flag_movimento)
         if keyword == 'ASSUNTO' and flag_titulo and not flag_movimento:
             pauta['tipo'] = pauta['tipo'].rstrip().replace(' .', '')
-            pauta['responsavel'] = re.sub(
-                r'VER[.a]*[.ª]*[ .]* ', '', pauta['responsavel'].rstrip()).replace(' .', '')
+            responsavel = re.sub(
+                r'VER[.a]*[.ª]*[ .]* ', '',
+                pauta['responsavel'].rstrip()).replace(' .', '') 
+            pauta['partido'] = responsavel.rsplit(' ', 1)[1]
+            pauta['responsavel'] = responsavel.rsplit(' ', 1)[0]
+            
             list_pautas.append(pauta)
             pauta = {'tipo': '', 'n': '', 'responsavel': ''}
 
