@@ -48,29 +48,48 @@ def find_orador(keywords):
 
 
 def find_projeto_de_lei(keywords):
-    found_projeto = False
+    flag_titulo = False
     flag_responsavel = False
+    flag_assunto = False
+    flag_movimento = True
+
     pauta = {'tipo': '', 'n': '', 'responsavel': ''}
     list_pautas = []
     for keyword in keywords:
-        if keyword in ['PROJETO', 'REQUERIMENTO', 'MOÇÃO']:
-            found_projeto = True
-        if keyword == 'ASSUNTO':
+        #print(flag_titulo, flag_responsavel, flag_assunto, flag_movimento)
+        if keyword == 'ASSUNTO' and flag_titulo and not flag_movimento:
             pauta['tipo'] = pauta['tipo'].rstrip().replace(' .', '')
             pauta['responsavel'] = re.sub(
                 r'VER[.a]*[.ª]*[ .]* ', '', pauta['responsavel'].rstrip()).replace(' .', '')
             list_pautas.append(pauta)
             pauta = {'tipo': '', 'n': '', 'responsavel': ''}
-            found_projeto = False
-            flag_responsavel = False
+
+            flag_titulo = False
+            flag_assunto = True
             continue
 
-        if found_projeto and re.search(r'\d/20\d\d', keyword):
+        if keyword == 'MOVIMENTO' and flag_assunto and not flag_titulo:
+            flag_assunto = False
+            flag_movimento = True
+            continue
+
+        if keyword in ['PROJETO', 'REQUERIMENTO', 'MOÇÃO'] and not flag_assunto:
+            if flag_movimento:
+                flag_titulo = True
+                flag_assunto = flag_movimento = flag_responsavel = False
+            else:
+                # quuando a string 'projeto' se repete em motivmento e titulo
+                continue
+
+        if (flag_assunto or flag_movimento):
+            continue
+
+        if flag_titulo and re.search(r'\d/20\d\d', keyword):
             pauta['n'] = keyword
             flag_responsavel = True
-        elif found_projeto and flag_responsavel:
+        elif flag_titulo and flag_responsavel:
             pauta['responsavel'] += keyword + ' '
-        elif found_projeto and not re.search(r'^N[.]*[\u00ba]+', keyword):
+        elif flag_titulo and not re.search(r'^N[.]*[\u00ba]+', keyword):
             pauta['tipo'] += keyword + ' '
 
     return list_pautas
