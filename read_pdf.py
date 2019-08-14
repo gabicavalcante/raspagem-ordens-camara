@@ -56,6 +56,9 @@ def find_projeto_de_lei(keywords):
         if keyword in ['PROJETO', 'REQUERIMENTO', 'MOÇÃO']:
             found_projeto = True
         if keyword == 'ASSUNTO':
+            pauta['tipo'] = pauta['tipo'].rstrip().replace(' .', '')
+            pauta['responsavel'] = re.sub(
+                r'VER[.a]*[.ª]*[ .]* ', '', pauta['responsavel'].rstrip()).replace(' .', '')
             list_pautas.append(pauta)
             pauta = {'tipo': '', 'n': '', 'responsavel': ''}
             found_projeto = False
