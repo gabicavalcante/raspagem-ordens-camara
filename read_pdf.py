@@ -9,6 +9,11 @@ import PyPDF2
 import re
 import nltk
 
+# importing all necessery modules
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
+import pandas as pd
+
 partidos = ['PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR', 'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC', 'PHS',
             'PV', 'PPS', 'PRP', 'PMN', 'PSC', 'PSDB', 'PSB', 'PCdoB', 'DEM', 'PTC', 'PT', 'PTB', 'PMDB', 'PDT',
             'PATRIOTA', 'AVANTE', 'PMB', 'PSD', 'PROS', 'SD', 'MDB']
@@ -47,25 +52,31 @@ def find_orador(keywords):
     return [s.rstrip() for s in oradores_final]
 
 
-def find_projeto_de_lei(keywords):
+def find_topics(keywords):
     flag_titulo = False
     flag_responsavel = False
     flag_assunto = False
-    flag_movimento = True
+    flag_movimento = False
 
+    flag_start_content = False
     pauta = {'tipo': '', 'n': '', 'responsavel': '',
              'movimento': '', 'assunto': ''}
     list_pautas = []
     for keyword in keywords:
+        if keyword == 'PAUTA':
+            flag_start_content = True
+
+        if not flag_start_content:
+            continue
+
         if keyword == 'ASSUNTO' and flag_titulo and not flag_movimento:
             pauta['tipo'] = pauta['tipo'].rstrip().replace(' .', '')
             responsavel = re.sub(
                 r'VER[.a]*[.ª]*[ .]* ', '',
                 pauta['responsavel'].rstrip()).replace(' .', '')
-            pauta['partido'] = responsavel.rsplit(' ', 1)[1]
-            pauta['responsavel'] = responsavel.rsplit(' ', 1)[0]
-
-            list_pautas.append(pauta)
+            # as vezes teremos mais de um partido envolvido
+            #pauta['partido'] = responsavel.rsplit(' ', 1)[1]
+            pauta['responsavel'] = responsavel  # .rsplit(' ', 1)[0]
 
             pauta = {'tipo': '', 'n': '', 'responsavel': '',
                      'movimento': '', 'assunto': ''}
@@ -80,7 +91,14 @@ def find_projeto_de_lei(keywords):
             continue
 
         if keyword in ['PROJETO', 'REQUERIMENTO', 'MOÇÃO'] and not flag_assunto:
-            if flag_movimento:
+            if flag_movimento or flag_start_content:
+                if flag_movimento:
+                    pauta['assunto'] = pauta['assunto'].replace(
+                        ' . ', '')
+                    pauta['movimento'] = responsavel = re.sub(
+                        r'ESTADO DO RIO GRANDE DO NORTE CÂMARA MUNICIPAL DO NATAL PALÁCIO PADRE MIGUELINHO \d[\d]*', '',
+                        pauta['movimento'].rstrip()).replace('.', '').rstrip()
+                    list_pautas.append(pauta)
                 flag_titulo = True
                 flag_assunto = flag_movimento = flag_responsavel = False
             else:
@@ -104,7 +122,7 @@ def find_projeto_de_lei(keywords):
     return list_pautas
 
 
-pdfFileObj = open('documents/Abril/ordem_do_dia_30_04_19.pdf', 'rb')
+pdfFileObj = open('documents/Abril/ordem_do_dia_07_05_19.pdf', 'rb')
 pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
 pageObj = pdfReader.getPage(0)
 
@@ -114,12 +132,35 @@ for page in range(pdfReader.numPages):
     pdf_text = replace_all(scape, pdf_text)
 
 tokens = word_tokenize(pdf_text)
-stop_words = stopwords.words('portuguese')
+# stop_words = stopwords.words('portuguese')
+# not word in stop_words and
 keywords = [
-    word for word in tokens if not word in stop_words and not word in punctuations]
+    word for word in tokens if not word in punctuations]
 
 documento = {}
 documento['oradores'] = find_orador(keywords[0:150])
-documento['pautas'] = find_projeto_de_lei(keywords)
+documento['pautas'] = find_topics(keywords)
 
 print(json.dumps(documento, sort_keys=True, indent=4, ensure_ascii=False))
+
+stop_words = stopwords.words('portuguese')
+# content = ' '.join([
+#    word.lower() for word in keywords if not word in stop_words])
+content = ''
+for pauta in documento['pautas']:
+    assunto = ' '.join(
+        [word.lower() for word in pauta['assunto'].split(' ') if not word in stop_words])
+    content += assunto
+
+wordcloud = WordCloud(width=800, height=800,
+                      background_color='white',
+                      stopwords=set(STOPWORDS),
+                      min_font_size=10).generate(content)
+
+# plot the WordCloud image
+plt.figure(figsize=(8, 8), facecolor=None)
+plt.imshow(wordcloud)
+plt.axis("off")
+plt.tight_layout(pad=0)
+
+plt.show()
