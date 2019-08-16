@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import itertools
 from nltk.corpus import stopwords
@@ -9,7 +8,6 @@ import PyPDF2
 import re
 import nltk
 
-# importing all necessery modules
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -74,9 +72,7 @@ def find_topics(keywords):
             responsavel = re.sub(
                 r'VER[.a]*[.ª]*[ .]* ', '',
                 pauta['responsavel'].rstrip()).replace(' .', '')
-            # as vezes teremos mais de um partido envolvido
-            #pauta['partido'] = responsavel.rsplit(' ', 1)[1]
-            pauta['responsavel'] = responsavel  # .rsplit(' ', 1)[0]
+            pauta['responsavel'] = responsavel
 
             pauta = {'tipo': '', 'n': '', 'responsavel': '',
                      'movimento': '', 'assunto': ''}
@@ -132,8 +128,6 @@ for page in range(pdfReader.numPages):
     pdf_text = replace_all(scape, pdf_text)
 
 tokens = word_tokenize(pdf_text)
-# stop_words = stopwords.words('portuguese')
-# not word in stop_words and
 keywords = [
     word for word in tokens if not word in punctuations]
 
@@ -144,8 +138,6 @@ documento['pautas'] = find_topics(keywords)
 print(json.dumps(documento, sort_keys=True, indent=4, ensure_ascii=False))
 
 stop_words = stopwords.words('portuguese')
-# content = ' '.join([
-#    word.lower() for word in keywords if not word in stop_words])
 content = ''
 for pauta in documento['pautas']:
     assunto = ' '.join(
@@ -157,7 +149,6 @@ wordcloud = WordCloud(width=800, height=800,
                       stopwords=set(STOPWORDS),
                       min_font_size=10).generate(content)
 
-# plot the WordCloud image
 plt.figure(figsize=(8, 8), facecolor=None)
 plt.imshow(wordcloud)
 plt.axis("off")
