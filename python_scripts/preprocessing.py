@@ -146,6 +146,13 @@ def find_topics(keywords):
         elif flag_title and not re.search(r'^N[.]*[\u00ba]+', keyword):
             topic['tipo'] += keyword + ' '
 
+    # save the last topic
+    topic['assunto'] = topic['assunto'].replace(' . ', '')
+    topic['movimento'] = responsavel = re.sub(
+        r'ESTADO DO RIO GRANDE DO NORTE CÂMARA MUNICIPAL DO NATAL PALÁCIO PADRE MIGUELINHO \d[\d]*', '',
+        topic['movimento'].rstrip()).replace('.', '').rstrip()
+    list_topics.append(topic)
+
     return list_topics
 
 
@@ -162,19 +169,19 @@ def read_content(file_path):
     keywords = [
         word for word in tokens if not word in punctuations]
 
-    documento = {}
-    documento['oradores'] = find_orator(keywords[0:150])
-    documento['pautas'] = find_topics(keywords)
+    document = {}
+    document['oradores'] = find_orator(keywords[0:150])
+    document['pautas'] = find_topics(keywords)
 
-    return documento
+    return document
 
 
-def word_cloud():
+def word_cloud(document):
     stop_words = stopwords.words('portuguese')
     content = ''
-    for pauta in documento['pautas']:
+    for pauta in document['pautas']:
         assunto = ' '.join(
-            [word.lower() for word in pauta['assunto'].split(' ') if not word in stop_words])
+            [word.lower() for word in pauta['assunto'].split(' ') if word not in stop_words])
         content += assunto
 
     wordcloud = WordCloud(width=800, height=800,
@@ -191,6 +198,20 @@ def word_cloud():
     plt.show()
 
 
+def search_topics(document):
+    for pauta in document['pautas']:
+        found_topic = False
+        for word in pauta['assunto'].split(' '):
+            if word.lower() in ['título', 'cidadão', 'natalense', 'natalence']:
+                found_topic = True
+        if found_topic:
+            return(pauta)
+
+
 if __name__ == "__main__":
-    documento = read_content('../documents/Abril/ordem_do_dia_07_05_19.pdf')
-    print(json.dumps(documento, sort_keys=True, indent=4, ensure_ascii=False))
+    document = read_content('../documents/Abril/ordem_do_dia_07_05_19.pdf')
+    # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
+    # word_cloud(document)
+    topics = search_topics(document)
+    print('{}/{} = {.3f}'.format(len(document['pautas']),
+                                 len(topics), (len(topics) * 100)/len(document['pautas'])))
