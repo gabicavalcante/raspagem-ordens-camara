@@ -1,22 +1,26 @@
 import json
 import itertools
+import re
+
 from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.tokenize import SpaceTokenizer
-
-import PyPDF2
-import re
-import nltk
-
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import pandas as pd
+import PyPDF2
 
-partidos = ['PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR', 'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC', 'PHS',
-            'PV', 'PPS', 'PRP', 'PMN', 'PSC', 'PSDB', 'PSB', 'PCdoB', 'DEM', 'PTC', 'PT', 'PTB', 'PMDB', 'PDT',
-            'PATRIOTA', 'AVANTE', 'PMB', 'PSD', 'PROS', 'SD', 'MDB']
-punctuations = ['(', ')', ';', ':', '[', ']', ',', '-']
-scape = ['\n', '\\', '-', 'Œ']
+
+PARTIDOS = [
+    'PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR',
+    'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC',
+    'PHS', 'PMDB', 'PPS', 'PRP', 'PMN', 'PSC',
+    'PSDB', 'PSB', 'PCdoB', 'DEM', 'PTC', 'PT',
+    'PTB', 'PV', 'PDT', 'PATRIOTA', 'AVANTE',
+    'PMB', 'PSD', 'PROS', 'SD', 'MDB'
+]
+PUNCTUATIONS = ['(', ')', ';', ':', '[', ']', ',', '-']
+TO_SCAPE = ['\n', '\\', '-', 'Œ']
 
 
 def replace_all(symbol_scape, content):
@@ -26,7 +30,7 @@ def replace_all(symbol_scape, content):
     return new_str
 
 
-def find_orador(keywords):
+def find_orador(keywords, limit=150):
     find_orador = False
     oradores = []
     for keyword in keywords:
@@ -36,7 +40,7 @@ def find_orador(keywords):
             oradores.append(keyword)
         if keyword == "ORADOR":
             find_orador = True
-    oradores = [s.split('.') for s in oradores if s not in partidos]
+    oradores = [s.split('.') for s in oradores if s not in PARTIDOS]
     oradores = list(itertools.chain.from_iterable(oradores))
     oradores_final = []
 
@@ -47,7 +51,7 @@ def find_orador(keywords):
             oradores_final.append('')
         elif s != 'a':
             oradores_final[count] += s + ' '
-    return [s.rstrip() for s in oradores_final]
+    return [s.rstrip() for s in oradores_final][0:limit]
 
 
 def find_topics(keywords):
@@ -57,8 +61,13 @@ def find_topics(keywords):
     flag_movimento = False
 
     flag_start_content = False
-    pauta = {'tipo': '', 'n': '', 'responsavel': '',
-             'movimento': '', 'assunto': ''}
+    pauta = {
+        'tipo': '',
+        'n': '',
+        'responsavel': '',
+        'movimento': '',
+        'assunto': ''
+    }
     list_pautas = []
     for keyword in keywords:
         if keyword == 'PAUTA':
@@ -74,8 +83,13 @@ def find_topics(keywords):
                 pauta['responsavel'].rstrip()).replace(' .', '')
             pauta['responsavel'] = responsavel
 
-            pauta = {'tipo': '', 'n': '', 'responsavel': '',
-                     'movimento': '', 'assunto': ''}
+            pauta = {
+                'tipo': '',
+                'n': '',
+                'responsavel': '',
+                'movimento': '',
+                'assunto': ''
+            }
 
             flag_titulo = False
             flag_assunto = True
@@ -98,13 +112,12 @@ def find_topics(keywords):
                 flag_titulo = True
                 flag_assunto = flag_movimento = flag_responsavel = False
             else:
-                # quuando a string 'projeto' se repete em motivmento e titulo
                 continue
 
-        if (flag_assunto and not flag_titulo):
+        if flag_assunto and not flag_titulo:
             pauta['assunto'] += keyword + ' '
 
-        if (flag_movimento and not flag_assunto):
+        if flag_movimento and not flag_assunto:
             pauta['movimento'] += keyword + ' '
 
         if flag_titulo and re.search(r'\d/20\d\d', keyword):
@@ -118,21 +131,20 @@ def find_topics(keywords):
     return list_pautas
 
 
-pdfFileObj = open('documents/Abril/ordem_do_dia_07_05_19.pdf', 'rb')
-pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
-pageObj = pdfReader.getPage(0)
+pdf_file_obj = open('documents/Abril/ordem_do_dia_07_05_19.pdf', 'rb')
+pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
 
 pdf_text = ''
-for page in range(pdfReader.numPages):
-    pdf_text += pdfReader.getPage(page).extractText()
-    pdf_text = replace_all(scape, pdf_text)
+for page in range(pdf_reader.numPages):
+    pdf_text += pdf_reader.getPage(page).extractText()
+    pdf_text = replace_all(TO_SCAPE, pdf_text)
 
 tokens = word_tokenize(pdf_text)
 keywords = [
-    word for word in tokens if not word in punctuations]
+    word for word in tokens if not word in PUNCTUATIONS]
 
 documento = {}
-documento['oradores'] = find_orador(keywords[0:150])
+documento['oradores'] = find_orador(keywords)
 documento['pautas'] = find_topics(keywords)
 
 print(json.dumps(documento, sort_keys=True, indent=4, ensure_ascii=False))
