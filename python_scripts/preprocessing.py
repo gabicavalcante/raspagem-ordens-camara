@@ -199,19 +199,27 @@ def word_cloud(document):
 
 
 def search_topics(document):
+    topics = []
     for pauta in document['pautas']:
         found_topic = False
         for word in pauta['assunto'].split(' '):
             if word.lower() in ['título', 'cidadão', 'natalense', 'natalence']:
                 found_topic = True
         if found_topic:
-            return(pauta)
+            topics.append(pauta)
+    return topics
 
 
 if __name__ == "__main__":
-    document = read_content('../documents/Abril/ordem_do_dia_07_05_19.pdf')
+    document = read_content('../documents/Abril/ordem_do_dia_24_04_19.pdf')
     # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
     # word_cloud(document)
     topics = search_topics(document)
-    print('{}/{} = {.3f}'.format(len(document['pautas']),
-                                 len(topics), (len(topics) * 100)/len(document['pautas'])))
+
+    print('{} topics | found {} topics = {:.2f}%'
+          .format(
+              len(document['pautas']),
+              len(topics),
+              (len(topics) * 100)/len(document['pautas'])
+          )
+          )
