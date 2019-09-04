@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 import json
 import itertools
-from nltk.corpus import stopwords
-from nltk import word_tokenize
-from nltk.tokenize import SpaceTokenizer
-
 import PyPDF2
 import re
 import nltk
 
-# importing all necessery modules
-from wordcloud import WordCloud, STOPWORDS
-import matplotlib.pyplot as plt
+from nltk.corpus import stopwords
+from nltk import word_tokenize
+from nltk.tokenize import SpaceTokenizer
+ 
 import pandas as pd
 
-partidos = ['PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR', 'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC', 'PHS',
-            'PV', 'PPS', 'PRP', 'PMN', 'PSC', 'PSDB', 'PSB', 'PCdoB', 'DEM', 'PTC', 'PT', 'PTB', 'PMDB', 'PDT',
+partidos = ['PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR', 'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC', 'PHS', 'PV',
+            'PPS', 'PRP', 'PMN', 'PSC', 'PSDB', 'PSB', 'PCdoB', 'DEM', 'PTC', 'PT', 'PTB', 'PMDB', 'PDT',
             'PATRIOTA', 'AVANTE', 'PMB', 'PSD', 'PROS', 'SD', 'MDB']
 punctuations = ['(', ')', ';', ':', '[', ']', ',', '-']
 scape = ['\n', '\\', '-', 'Œ']
@@ -176,50 +173,6 @@ def read_content(file_path):
     return document
 
 
-def word_cloud(document):
-    stop_words = stopwords.words('portuguese')
-    content = ''
-    for pauta in document['pautas']:
-        assunto = ' '.join(
-            [word.lower() for word in pauta['assunto'].split(' ') if word not in stop_words])
-        content += assunto
-
-    wordcloud = WordCloud(width=800, height=800,
-                          background_color='white',
-                          stopwords=set(STOPWORDS),
-                          min_font_size=10).generate(content)
-
-    # plot the WordCloud image
-    plt.figure(figsize=(8, 8), facecolor=None)
-    plt.imshow(wordcloud)
-    plt.axis("off")
-    plt.tight_layout(pad=0)
-
-    plt.show()
-
-
-def search_topics(document):
-    topics = []
-    for pauta in document['pautas']:
-        found_topic = False
-        for word in pauta['assunto'].split(' '):
-            if word.lower() in ['título', 'cidadão', 'natalense', 'natalence']:
-                found_topic = True
-        if found_topic:
-            topics.append(pauta)
-    return topics
-
-
 if __name__ == "__main__":
     document = read_content('../documents/Abril/ordem_do_dia_24_04_19.pdf')
-    # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
-    # word_cloud(document)
-    topics = search_topics(document)
-
-    print('{} topics | found {} topics = {:.2f}%'
-          .format(
-              len(document['pautas']),
-              len(topics),
-              (len(topics) * 100)/len(document['pautas'])
-          )
-          )
+    print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))

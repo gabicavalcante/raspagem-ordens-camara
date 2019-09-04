@@ -54,7 +54,7 @@ for month, label in months.items():
     urls = [c['href'] for c in content]
 
     # create path if it doesnt exist
-    path = 'documents/{}/'.format(label)
+    path = '../documents/{}/'.format(label)
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -62,10 +62,10 @@ for month, label in months.items():
         pdf = requests.get(url)
         file_name = '{}'.format(
             doc
-            .lstrip() # remove initial space
-            .lower() # convert to lowcase
+            .lstrip()  # remove initial space
+            .lower()  # convert to lowcase
             .replace(' ', '_')
             .replace('/', '_')
             .replace('-', '_'))
-        open('documents/{}/{}.pdf'.format(label,
-                                          file_name), 'wb').write(pdf.content)
+        open('../documents/{}/{}.pdf'.format(label,
+                                             file_name), 'wb').write(pdf.content)
