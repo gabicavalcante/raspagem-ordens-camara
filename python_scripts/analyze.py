@@ -1,4 +1,6 @@
+# !/usr/bin/python3
 import os
+import json
 import matplotlib.pyplot as plt
 
 from preprocessing import read_content
@@ -40,9 +42,21 @@ def search_topics(document):
 
 
 if __name__ == "__main__":
-    files = os.listdir('../documents/Abril/')
+    path = "../documents"
+    files = []
+
+    for dir_path, _, filenames in os.walk(path):
+        for filename in [f for f in filenames if f.endswith(".pdf")]:
+            files.append(os.path.join(dir_path, filename))
+
+    # TODO: error ['../documents/Junho/ordem_do_dia_25_06_19.pdf']
     for file in files:
-        document = read_content('../documents/Abril/' + file)
+        # print(file)
+        document = read_content(file)
+
+        if not document:
+            continue
+        # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
         topics = search_topics(document)
 
         print('{} topics | found {} topics = {:.2f}%'

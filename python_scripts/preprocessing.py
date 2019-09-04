@@ -170,6 +170,10 @@ def read_content(file_path):
     document['oradores'] = find_orator(keywords[0:150])
     document['pautas'] = find_topics(keywords)
 
+    # TODO
+    if not document['oradores']: 
+        return None
+
     return document
 
 
