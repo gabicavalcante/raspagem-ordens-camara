@@ -110,7 +110,7 @@ def find_topics(keywords):
             flag_forwarding = True
             continue
 
-        if keyword in ['PROJETO', 'REQUERIMENTO', 'MOÇÃO'] and not flag_subject:
+        if keyword in ['PROJETO', 'REQUERIMENTO', 'MOÇÃO', 'EMENDA'] and not flag_subject:
             if flag_forwarding or flag_start_content:
                 if flag_forwarding:
                     topic['assunto'] = topic['assunto'].replace(
