@@ -5,10 +5,9 @@ import PyPDF2
 import re
 import nltk
 
-from nltk.corpus import stopwords
 from nltk import word_tokenize
 from nltk.tokenize import SpaceTokenizer
- 
+
 import pandas as pd
 
 partidos = ['PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR', 'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC', 'PHS', 'PV',
@@ -155,7 +154,7 @@ def find_topics(keywords):
 
 def read_content(file_path):
     pdfFileObj = open(file_path, 'rb')
-    pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
+    pdfReader = PyPDF2.PdfFileReader(pdfFileObj, strict=False)
 
     pdf_text = ''
     for page in range(pdfReader.numPages):
@@ -171,7 +170,7 @@ def read_content(file_path):
     document['pautas'] = find_topics(keywords)
 
     # TODO
-    if not document['oradores']: 
+    if not document['oradores']:
         return None
 
     return document

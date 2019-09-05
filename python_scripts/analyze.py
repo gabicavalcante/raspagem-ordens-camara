@@ -1,10 +1,49 @@
 # !/usr/bin/python3
+import spacy
 import os
 import json
 import matplotlib.pyplot as plt
 
 from preprocessing import read_content
 from wordcloud import WordCloud, STOPWORDS
+from nltk.corpus import stopwords, mac_morpho
+from nltk import data, download
+
+# try:
+#    data.find('averaged_perceptron_tagger')
+# except LookupError:
+#    download('averaged_perceptron_tagger')
+
+
+nlp = spacy.load('pt_core_news_sm')
+
+remove_tags = ["VERB", "ADP", "DET", "CCONJ"]
+
+
+def remove_verbs(sentence):
+    content = ""
+    for token in nlp(sentence):
+        if token.pos_ not in remove_tags:
+            content += token.text + " "
+    return content
+
+
+def check_verb(word):
+    sentence = "ela " + word.lower()
+    token = nlp(sentence)
+    if token[1].pos_ in remove_tags:
+        return True
+    return False
+
+
+def to_remove(word):
+    if not word:
+        return True
+
+    token = nlp(word)
+    if token[0].pos_ not in remove_tags and not check_verb(word):
+        return False
+    return True
 
 
 def word_cloud(document):
@@ -12,8 +51,9 @@ def word_cloud(document):
     content = ''
     for pauta in document['pautas']:
         assunto = ' '.join(
-            [word.lower() for word in pauta['assunto'].split(' ') if word not in stop_words])
-        content += assunto
+            [word.lower() for word in pauta['assunto'].split(' ') if word not in stop_words and not to_remove(word)])
+        remove_verbs(assunto)
+        content += assunto + " "
 
     wordcloud = WordCloud(width=800, height=800,
                           background_color='white',
@@ -50,14 +90,17 @@ if __name__ == "__main__":
             files.append(os.path.join(dir_path, filename))
 
     # TODO: error ['../documents/Junho/ordem_do_dia_25_06_19.pdf']
-    for file in files:
-        # print(file)
+    for file in files[0:1]:
+        print(file)
         document = read_content(file)
 
         if not document:
             continue
+
+        word_cloud(document)
+        # remove_verbs(document['pautas'][1]['assunto'])
         # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
-        topics = search_topics(document)
+        """topics = search_topics(document)
 
         print('{} topics | found {} topics = {:.2f}%'
               .format(
@@ -65,4 +108,4 @@ if __name__ == "__main__":
                   len(topics),
                   (len(topics) * 100)/len(document['pautas'])
               )
-              )
+              )"""

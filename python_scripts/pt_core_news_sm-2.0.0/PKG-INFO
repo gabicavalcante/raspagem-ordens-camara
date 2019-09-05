@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: pt_core_news_sm
+Version: 2.0.0
+Summary: Portuguese multi-task CNN trained on the Universal Dependencies and WikiNER corpus. Assigns context-specific token vectors, POS tags, dependency parse and named entities. Supports identification of PER, LOC, ORG and MISC entities.
+Home-page: https://explosion.ai
+Author: Explosion AI
+Author-email: contact@explosion.ai
+License: CC BY-SA 4.0
+Description-Content-Type: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
