@@ -52,7 +52,7 @@ def word_cloud(document):
     for pauta in document['pautas']:
         assunto = ' '.join(
             [word.lower() for word in pauta['assunto'].split(' ') if word not in stop_words and not to_remove(word)])
-        remove_verbs(assunto)
+        # remove_verbs(assunto)
         content += assunto + " "
 
     wordcloud = WordCloud(width=800, height=800,
@@ -81,6 +81,16 @@ def search_topics(document):
     return topics
 
 
+def search_topics_with_address(document):
+    topics = []
+
+    for pauta in document['pautas']:
+        if (pauta['assunto'].lower().find(' rua ') > 0):
+            topics.append(pauta['assunto'])
+
+    return topics
+
+
 if __name__ == "__main__":
     path = "../documents"
     files = []
@@ -89,23 +99,26 @@ if __name__ == "__main__":
         for filename in [f for f in filenames if f.endswith(".pdf")]:
             files.append(os.path.join(dir_path, filename))
 
-    # TODO: error ['../documents/Junho/ordem_do_dia_25_06_19.pdf']
     for file in files[0:1]:
-        print(file)
+        # print(file)
         document = read_content(file)
 
         if not document:
             continue
 
-        word_cloud(document)
+        # word_cloud(document)
         # remove_verbs(document['pautas'][1]['assunto'])
         # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
-        """topics = search_topics(document)
+        topics = search_topics_with_address(document)
 
-        print('{} topics | found {} topics = {:.2f}%'
-              .format(
-                  len(document['pautas']),
-                  len(topics),
-                  (len(topics) * 100)/len(document['pautas'])
-              )
-              )"""
+        for topic in topics:
+            print(topic)
+        #topics = search_topics(document)
+
+        # print('{} topics | found {} topics = {:.2f}%'
+        #      .format(
+        #          len(document['pautas']),
+        #          len(topics),
+        #          (len(topics) * 100)/len(document['pautas'])
+        #      )
+        #      )
