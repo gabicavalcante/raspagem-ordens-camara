@@ -77,6 +77,7 @@ def search_topics(document):
             if word.lower() in ['título', 'cidadão', 'natalense', 'natalence']:
                 found_topic = True
         if found_topic:
+            print(pauta)
             topics.append(pauta)
     return topics
 
@@ -106,13 +107,9 @@ if __name__ == "__main__":
         if not document:
             continue
 
-        # word_cloud(document)
-        # remove_verbs(document['pautas'][1]['assunto'])
+        word_cloud(document)
         # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
-        topics = search_topics_with_address(document)
 
-        for topic in topics:
-            print(topic)
         #topics = search_topics(document)
 
         # print('{} topics | found {} topics = {:.2f}%'
@@ -122,3 +119,8 @@ if __name__ == "__main__":
         #          (len(topics) * 100)/len(document['pautas'])
         #      )
         #      )
+
+        # TODO: encontrar ruas
+        #topics = search_topics_with_address(document)
+        # for topic in topics:
+        #    print(topic)
