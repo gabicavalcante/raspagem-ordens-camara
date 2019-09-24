@@ -1,4 +1,5 @@
 # !/usr/bin/python3
+# -*- coding: utf-8 -*-
 import spacy
 import os
 import json
@@ -86,10 +87,27 @@ def search_topics_with_address(document):
     topics = []
 
     for pauta in document['pautas']:
-        if (pauta['assunto'].lower().find(' rua ') > 0):
+        if (pauta['assunto'].lower().find(' rua ') > 0) or (pauta['assunto'].lower().find(' avenida ') > 0) or (pauta['assunto'].lower().find(' bairro ') > 0):
             topics.append(pauta['assunto'])
 
-    return topics
+    flag = False
+    address = ""
+    adresses = []
+    count = 1
+    for topic in topics:
+        for word in topic.split(' '):
+            if word.lower() in ['rua', 'avenida', 'bairro'] or flag:
+                flag = True
+                address += word + ' '
+                count += 1
+            if count == 5:
+                flag = False
+                count = 1
+                break
+        if "Requer" not in address:
+            adresses.append({'address': address, 'topic': topic})
+        address = ""
+    return adresses
 
 
 if __name__ == "__main__":
@@ -107,7 +125,7 @@ if __name__ == "__main__":
         if not document:
             continue
 
-        word_cloud(document)
+        # word_cloud(document)
         # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
 
         #topics = search_topics(document)
@@ -121,6 +139,8 @@ if __name__ == "__main__":
         #      )
 
         # TODO: encontrar ruas
-        #topics = search_topics_with_address(document)
+        locales = search_topics_with_address(document)
+        import maps
+        maps.create_map(locales)
         # for topic in topics:
         #    print(topic)
