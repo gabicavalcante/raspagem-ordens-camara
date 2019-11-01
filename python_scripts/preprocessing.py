@@ -3,17 +3,23 @@ import json
 import itertools
 import PyPDF2
 import re
-import nltk
+import os
+import sys
 
+import nltk
 from nltk import word_tokenize
 from nltk.tokenize import SpaceTokenizer
 
 import pandas as pd
 
+from db import collection
+collection.remove()
+
+
 partidos = ['PRTB', 'PCB', 'PSTU', 'PP', 'PTdoB', 'PR', 'PSOL', 'PRB', 'PSL', 'PTN', 'PCO', 'PSDC', 'PHS', 'PV',
             'PPS', 'PRP', 'PMN', 'PSC', 'PSDB', 'PSB', 'PCdoB', 'DEM', 'PTC', 'PT', 'PTB', 'PMDB', 'PDT',
             'PATRIOTA', 'AVANTE', 'PMB', 'PSD', 'PROS', 'SD', 'MDB']
-punctuations = ['(', ')', ';', ':', '[', ']', ',', '-']
+punctuations = ['(', ')', ';', ':', '[', ']', '-']
 scape = ['\n', '\\', '-', 'Œ']
 
 
@@ -158,8 +164,9 @@ def read_content(file_path):
 
     pdf_text = ''
     for page in range(pdfReader.numPages):
-        pdf_text += pdfReader.getPage(page).extractText()
-        pdf_text = replace_all(scape, pdf_text)
+        page_text = pdfReader.getPage(page).extractText()
+        page_text = replace_all(scape, page_text)
+        pdf_text += page_text
 
     tokens = word_tokenize(pdf_text)
     keywords = [
@@ -171,11 +178,26 @@ def read_content(file_path):
 
     # TODO
     if not document['oradores']:
-        return None
+        return {}
 
     return document
 
 
 if __name__ == "__main__":
-    document = read_content('../documents/Abril/ordem_do_dia_24_04_19.pdf')
-    print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
+    if len(sys.argv) != 2:
+        print("give us the way to save the output (csv|mongo)")
+    else:
+        arg = sys.argv[1]
+        if arg == 'csv':
+            pass
+        elif arg == 'mongo':
+            path = "../documents"
+            files = []
+
+            for dir_path, _, filenames in os.walk(path):
+                for filename in [f for f in filenames if f.endswith(".pdf")]:
+                    file_path = os.path.join(dir_path, filename)
+                    document = read_content(file_path)
+                    collection.insert_one(document)
+        else:
+            print('invalid option')

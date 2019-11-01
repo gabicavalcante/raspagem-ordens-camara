@@ -1,14 +1,18 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 import spacy
-import os
 import json
+from bson.objectid import ObjectId
+
 import matplotlib.pyplot as plt
 
-from preprocessing import read_content
-from wordcloud import WordCloud, STOPWORDS
+from wordcloud import WordCloud
 from nltk.corpus import stopwords, mac_morpho
 from nltk import data, download
+
+from nltk.tokenize import WhitespaceTokenizer
+
+from db import collection
 
 # try:
 #    data.find('averaged_perceptron_tagger')
@@ -17,7 +21,6 @@ from nltk import data, download
 
 
 nlp = spacy.load('pt_core_news_sm')
-
 remove_tags = ["VERB", "ADP", "DET", "CCONJ"]
 
 
@@ -48,25 +51,32 @@ def to_remove(word):
 
 
 def word_cloud(document):
-    stop_words = stopwords.words('portuguese')
+    stop_words = set(stopwords.words('portuguese'))
+    new_words = []
+    with open("python_scripts/stopwords_portuguese.txt", 'r') as f:
+        [new_words.append(word) for line in f for word in line.split()]
+
+    all_stopwords = stop_words.union(new_words)
+
     content = ''
+
     for pauta in document['pautas']:
         assunto = ' '.join(
-            [word.lower() for word in pauta['assunto'].split(' ') if word not in stop_words and not to_remove(word)])
-        # remove_verbs(assunto)
+            [word.lower() for word in WhitespaceTokenizer().tokenize(pauta['assunto']) if word not in stop_words and not to_remove(word)])
         content += assunto + " "
 
     wordcloud = WordCloud(width=800, height=800,
                           background_color='white',
-                          stopwords=set(STOPWORDS),
-                          min_font_size=10).generate(content)
+                          stopwords=all_stopwords,
+                          min_font_size=10,
+                          collocations=False).generate(content)
+    # print(wordcloud.words_)
 
     # plot the WordCloud image
     plt.figure(figsize=(8, 8), facecolor=None)
     plt.imshow(wordcloud)
     plt.axis("off")
     plt.tight_layout(pad=0)
-
     plt.show()
 
 
@@ -92,7 +102,7 @@ def search_topics_with_address(document):
 
     flag = False
     address = ""
-    adresses = []
+    addresses = []
     count = 1
     for topic in topics:
         for word in topic.split(' '):
@@ -105,42 +115,29 @@ def search_topics_with_address(document):
                 count = 1
                 break
         if "Requer" not in address:
-            adresses.append({'address': address, 'topic': topic})
+            addresses.append({'address': address, 'topic': topic})
         address = ""
-    return adresses
+    return addresses
 
 
 if __name__ == "__main__":
-    path = "../documents"
-    files = []
+    document = collection.find_one(
+        {'_id': ObjectId('5dbc3d2cfcaa0c48eadcac4a')})
+    # word_cloud(document)
+    # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
 
-    for dir_path, _, filenames in os.walk(path):
-        for filename in [f for f in filenames if f.endswith(".pdf")]:
-            files.append(os.path.join(dir_path, filename))
+    # topics = search_topics(document)
 
-    for file in files[0:1]:
-        # print(file)
-        document = read_content(file)
+    # print('{} topics | found {} topics = {:.2f}%'
+    #      .format(
+    #          len(document['pautas']),
+    #          len(topics),
+    #          (len(topics) * 100)/len(document['pautas'])
+    #      )
+    #      )
 
-        if not document:
-            continue
-
-        # word_cloud(document)
-        # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
-
-        #topics = search_topics(document)
-
-        # print('{} topics | found {} topics = {:.2f}%'
-        #      .format(
-        #          len(document['pautas']),
-        #          len(topics),
-        #          (len(topics) * 100)/len(document['pautas'])
-        #      )
-        #      )
-
-        # TODO: encontrar ruas
-        locales = search_topics_with_address(document)
-        import maps
-        maps.create_map(locales)
-        # for topic in topics:
-        #    print(topic)
+    addresses = search_topics_with_address(document)
+    import maps
+    maps.create_map(addresses)
+    #for topic in topics:
+    #    print(topic)
