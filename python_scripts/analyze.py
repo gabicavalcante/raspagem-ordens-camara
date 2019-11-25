@@ -123,21 +123,24 @@ def search_topics_with_address(document):
 if __name__ == "__main__":
     document = collection.find_one(
         {'_id': ObjectId('5dbc3d2cfcaa0c48eadcac4a')})
+    assuntos = [pauta.get('assunto') for pauta in document.get('pautas')]
+    import ipdb
+    ipdb.set_trace()
+
+
     # word_cloud(document)
     # print(json.dumps(document, sort_keys=True, indent=4, ensure_ascii=False))
 
     # topics = search_topics(document)
-
     # print('{} topics | found {} topics = {:.2f}%'
     #      .format(
     #          len(document['pautas']),
     #          len(topics),
     #          (len(topics) * 100)/len(document['pautas'])
     #      )
-    #      )
+    # )
 
-    addresses = search_topics_with_address(document)
-    import maps
-    maps.create_map(addresses)
-    #for topic in topics:
-    #    print(topic)
+    # maps
+    # addresses = search_topics_with_address(document)
+    # import maps
+    # maps.create_map(addresses)

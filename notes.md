@@ -1,0 +1,1 @@
+mongoexport --db webscraping --collection documents --type=csv --fields 'pautas.0.tipo,pautas.0.n,pautas.0.responsavel,pautas.0.movimento,pautas.0.assunto' --out /Users/gabriela/Student/ciencia_dados/raspagem/doc.csv

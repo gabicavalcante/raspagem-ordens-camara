@@ -94,6 +94,7 @@ def find_topics(keywords):
         if keyword == 'PAUTA':
             flag_start_content = True
 
+        # estamos lendo o cabeçalho do arquivo
         if not flag_start_content:
             continue
 
@@ -120,8 +121,8 @@ def find_topics(keywords):
                 if flag_forwarding:
                     topic['assunto'] = topic['assunto'].replace(
                         ' . ', '')
-                    topic['movimento'] = responsavel = re.sub(
-                        r'ESTADO DO RIO GRANDE DO NORTE CÂMARA MUNICIPAL DO NATAL PALÁCIO PADRE MIGUELINHO \d[\d]*', '',
+                    topic['movimento'] = re.sub(
+                        r'ESTADO DO RIO GRANDE DO NORTE CÂMARA MUNICIPAL DO NATAL PALÁCIO PADRE MIGUELINHO', '',
                         topic['movimento'].rstrip()).replace('.', '').rstrip()
                     list_topics.append(topic)
 
@@ -150,8 +151,8 @@ def find_topics(keywords):
 
     # save the last topic
     topic['assunto'] = topic['assunto'].replace(' . ', '')
-    topic['movimento'] = responsavel = re.sub(
-        r'ESTADO DO RIO GRANDE DO NORTE CÂMARA MUNICIPAL DO NATAL PALÁCIO PADRE MIGUELINHO \d[\d]*', '',
+    topic['movimento'] = re.sub(
+        r'ESTADO DO RIO GRANDE DO NORTE CÂMARA MUNICIPAL DO NATAL PALÁCIO PADRE MIGUELINHO', '',
         topic['movimento'].rstrip()).replace('.', '').rstrip()
     list_topics.append(topic)
 
